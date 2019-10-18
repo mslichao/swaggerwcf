@@ -33,7 +33,7 @@ namespace SwaggerWcf.Support
             Service service = new Service();
             List<string> hiddenTags = SwaggerWcfEndpoint.FilterHiddenTags(path, GetHiddenTags(config));
             List<string> visibleTags = SwaggerWcfEndpoint.FilterVisibleTags(path, GetVisibleTags(config));
-            IReadOnlyDictionary<string, string> settings = GetSettings(config);
+            Dictionary<string, string> settings = GetSettings(config);
 
             ProcessSettings(service, settings);
 
@@ -61,13 +61,13 @@ namespace SwaggerWcf.Support
                        .ToList() ?? new List<string>();
         }
 
-        private static IReadOnlyDictionary<string, string> GetSettings(SwaggerWcfSection config)
+        private static Dictionary<string, string> GetSettings(SwaggerWcfSection config)
         {
             return config.Settings?.OfType<SettingElement>().ToDictionary(se => se.Name, se => se.Value)
                 ?? new Dictionary<string, string>();
         }
 
-        private static void ProcessSettings(Service service, IReadOnlyDictionary<string, string> settings)
+        private static void ProcessSettings(Service service, Dictionary<string, string> settings)
         {
             if (settings.ContainsKey("BasePath"))
                 service.BasePath = settings["BasePath"];
@@ -139,21 +139,21 @@ namespace SwaggerWcf.Support
                         basePath = "/" + basePath;
                 }
 
-                var paths = mapper.FindMethods(ti.AsType(), definitionsTypesList, basePath);
+                var paths = mapper.FindMethods(ti, definitionsTypesList, basePath);
                 service.Paths.AddRange(paths);
             }
         }
 
-        private static IEnumerable<TypeInfo> GetAssemblyTypes(IList<string> hiddenTags)
+        private static IEnumerable<Type> GetAssemblyTypes(IList<string> hiddenTags)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
             foreach (var assembly in assemblies)
             {
-                IEnumerable<TypeInfo> types;
+                IEnumerable<Type> types;
                 try
                 {
-                    types = assembly.DefinedTypes;
+                    types = assembly.GetTypes();
                 }
                 catch (Exception)
                 {
@@ -161,10 +161,10 @@ namespace SwaggerWcf.Support
                     continue;
                 }
 
-                foreach (TypeInfo ti in types)
+                foreach (var ti in types)
                 {
                     var da = ti.GetCustomAttribute<SwaggerWcfAttribute>();
-                    if (da == null || hiddenTags.Any(ht => ht == ti.AsType().Name))
+                    if (da == null || hiddenTags.Any(ht => ht == ti.Name))
                         continue;
 
                     yield return ti;

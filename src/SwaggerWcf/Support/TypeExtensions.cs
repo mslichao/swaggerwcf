@@ -25,7 +25,7 @@ namespace SwaggerWcf.Support
         public static string GetModelWrappedName(this Type type) =>
             type.GetCustomAttribute<SwaggerWcfDefinitionAttribute>()?.ModelName ?? type.FullName;
 
-        internal static Info GetServiceInfo(this TypeInfo typeInfo)
+        internal static Info GetServiceInfo(this Type typeInfo)
         {
             var infoAttr = typeInfo.GetCustomAttribute<SwaggerWcfServiceInfoAttribute>() ??
                 throw new ArgumentException($"{typeInfo.FullName} does not have {nameof(SwaggerWcfServiceInfoAttribute)}");

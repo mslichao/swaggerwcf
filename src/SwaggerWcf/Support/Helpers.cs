@@ -113,7 +113,7 @@ namespace SwaggerWcf.Support
             //it's a Nullable<T> so treat it as T - we'll handle making it not-required later
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                return MapSwaggerType(type.GenericTypeArguments[0], definitions);
+                return MapSwaggerType(type.GetGenericArguments()[0], definitions);
             }
 
             //it's a complex type, so we'll need to map it later
@@ -155,7 +155,7 @@ namespace SwaggerWcf.Support
                 return null;
             }
 
-            return prop.GetValue(attr) as T1;
+            return prop.GetValue(attr, null) as T1;
         }
 
         public static bool GetCustomAttributeValue<T>(MethodInfo method, string propertyName, bool defaultVal = false)
@@ -173,7 +173,7 @@ namespace SwaggerWcf.Support
                 return defaultVal;
             }
 
-            return (bool)prop.GetValue(attr);
+            return (bool)prop.GetValue(attr, null);
         }
 
         internal static TypeFormat MapElementType(Type type, List<Type> definitions)

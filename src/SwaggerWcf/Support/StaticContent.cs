@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Ionic.Zip;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
@@ -8,8 +9,8 @@ namespace SwaggerWcf.Support
     public class StaticContent
     {
         private const string ZipFileName = "SwaggerWcf.www.swagger-ui.zip";
-        private static readonly ZipArchive Archive;
-        private static ZipArchive _archiveCustom;
+        private static readonly ZipFile Archive;
+        private static ZipFile _archiveCustom;
 
         internal static GetFileCustomDelegate GetFileCustom;
 
@@ -23,7 +24,7 @@ namespace SwaggerWcf.Support
                 if (zipStream == null)
                     return;
 
-                Archive = new ZipArchive(zipStream);
+                Archive = ZipFile.Read(zipStream);
             }
             catch { }
         }
@@ -35,7 +36,7 @@ namespace SwaggerWcf.Support
                 if (zipCustomStream == null)
                     return;
 
-                _archiveCustom = new ZipArchive(zipCustomStream);
+                _archiveCustom = ZipFile.Read(zipCustomStream);
             }
             catch { }
         }
@@ -53,21 +54,21 @@ namespace SwaggerWcf.Support
 
             if (_archiveCustom != null)
             {
-                ZipArchiveEntry file = _archiveCustom.Entries.FirstOrDefault(entry => entry.FullName == filename);
+                ZipEntry file = _archiveCustom.Entries.FirstOrDefault(entry => entry.FileName == filename);
                 if (file != null && contentType != null)
                 {
-                    contentLength = file.Length;
-                    return file.Open();
+                    contentLength = file.UncompressedSize;
+                    return file.OpenReader();
                 }
             }
 
             if (Archive != null)
             {
-                ZipArchiveEntry file = Archive.Entries.FirstOrDefault(entry => entry.FullName == filename);
+                ZipEntry file = Archive.Entries.FirstOrDefault(entry => entry.FileName == filename);
                 if (file != null && contentType != null)
                 {
-                    contentLength = file.Length;
-                    return file.Open();
+                    contentLength = file.UncompressedSize;
+                    return file.OpenReader();
                 }
             }
 

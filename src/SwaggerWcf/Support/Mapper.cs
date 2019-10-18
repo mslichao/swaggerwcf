@@ -56,7 +56,7 @@ namespace SwaggerWcf.Support
 
             foreach (Type i in types)
             {
-                Attribute dc = i.GetCustomAttribute(typeof(ServiceContractAttribute));
+                Attribute dc = i.GetCustomAttribute<ServiceContractAttribute>();
                 if (dc == null)
                     continue;
 
@@ -304,7 +304,7 @@ namespace SwaggerWcf.Support
                     {
                         bool required = settings != null && settings.Required;
 
-                        if (!required && !parameter.HasDefaultValue)
+                        if (!required && parameter.DefaultValue == DBNull.Value)
                             required = true;
 
                         typeBuilder.AddField(parameter.Name, parameter.ParameterType, required);
@@ -408,7 +408,7 @@ namespace SwaggerWcf.Support
             if (inType == InType.Path)
                 required = true;
 
-            if (!required && !parameter.HasDefaultValue)
+            if (!required && parameter.DefaultValue == DBNull.Value)
                 required = true;
 
             Type paramType = settings == null || settings.ParameterType == null
@@ -417,7 +417,7 @@ namespace SwaggerWcf.Support
             if (paramType.IsGenericType && paramType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 required = false;
-                paramType = paramType.GenericTypeArguments[0];
+                paramType = paramType.GetGenericArguments()[0];
             }
 
             if (typeFormat.Type == ParameterType.Object)
@@ -667,7 +667,7 @@ namespace SwaggerWcf.Support
                               ?? declaration.ReturnType;
 
             if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                returnType = returnType.GenericTypeArguments[0];
+                returnType = returnType.GetGenericArguments()[0];
 
             Schema schema = returnType.IsEnum
                                 ? BuildSchemaForEnum(returnType, definitionsTypesList)
